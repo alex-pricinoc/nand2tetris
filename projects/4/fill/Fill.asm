@@ -8,4 +8,45 @@
 // i.e. writes "black" in every pixel. When no key is pressed, 
 // the screen should be cleared.
 
-//// Replace this comment with your code.
+
+(START)
+    @SCREEN
+    D=A
+    @R0
+    M=D // save screen start in R0
+(READ)
+    @KBD
+    D=M
+    @BLACK
+    D;JGT
+    @WHITE
+    D;JEQ
+(WHITE)
+    @R1
+    M=0 // save color in R1
+    @DRAW
+    0;JMP
+(BLACK)
+    @R1
+    M=-1
+    @DRAW
+    0;JMP
+(DRAW)
+    // set pixels at RAM[R0] to color at R1
+    @R1
+    D=M
+    @R0
+    A=M
+    M=D
+
+    // increment address
+    @R0
+    MD=M+1
+
+    @KBD
+    D=A-D // if (KBD-SCREEN = 0) exit
+    @START
+    D;JEQ
+
+    @READ
+    0;JMP
