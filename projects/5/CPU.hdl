@@ -32,5 +32,40 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-	//// Replace this comment with your code.
+
+
+
+    Mux16(a=instruction, b=outALU, sel=instruction[15], out=inRegA);
+    Not(in=instruction[15], out=Ainstruction);
+    Or(a=Ainstruction, b=instruction[5], out=loadRegisterA);
+    ARegister(in=inRegA, load=loadRegisterA, out=registerA, out[0..14]=addressM);
+    DRegister(in=outALU, load=instruction[4], out=registerD);
+    // write to M if C instruction
+    And(a=instruction[3], b=instruction[15], out=writeM);
+
+
+    DMux8Way(in=true, sel=instruction[0..2], a=null, b=jgt, c=jeq, d=jge, e=jlt, f=jne, g=jle, h=jmp);
+    Or(a=outZero, b=outNeg, out=outZeroOrNeg);
+    Not(in=outZeroOrNeg, out=outPositive);
+    Not(in=outNeg, out=greaterEqualZero);
+    Not(in=outZero, out=notZero);
+
+    And(a=outPositive, b=jgt, out=j1);
+    And(a=outZero, b=jeq, out=j2);
+    And(a=greaterEqualZero, b=jge, out=j3);
+    And(a=outNeg, b=jlt, out=j4);
+    And(a=notZero, b=jne, out=j5);
+    And(a=outZeroOrNeg, b=jle, out=j6);
+    Or8Way(in[0]=j1, in[1]=j2, in[2]=j3, in[3]=j4, in[4]=j5, in[5]=j6, in[6]=jmp, out=j7);
+    And(a=instruction[15], b=j7, out=jump);
+
+    PC(in=registerA, load=jump,inc=true,reset=reset, out[0..14] = pc);
+
+    Mux16(a=registerA, b=inM, sel=instruction[12], out=AorM);
+
+    ALU(x=registerD, y=AorM,
+        zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8],f=instruction[7], no=instruction[6],
+        out=outALU, out=outM,
+        zr=outZero, ng=outNeg);
+
 }
