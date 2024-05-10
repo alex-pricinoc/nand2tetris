@@ -1,64 +1,69 @@
-/// returns 3 bits
-pub fn dest(mnemonic: &str) -> u8 {
-    match mnemonic {
-        "null" => 0b000,
-        "M" => 0b001,
-        "D" => 0b010,
-        "MD" => 0b011,
-        "A" => 0b100,
-        "AM" => 0b101,
-        "AD" => 0b110,
-        "AMD" => 0b111,
-        d => panic!("unrecognized dest mnemonic: {d}"),
+use crate::{Comp, CompValue, Dest, Jump};
+
+pub fn dest(dest: Dest) -> u8 {
+    use Dest::*;
+
+    match dest {
+        NULL => 0,
+        M => 1,
+        D => 2,
+        MD => 3,
+        A => 4,
+        AM => 5,
+        AD => 6,
+        AMD => 7,
     }
 }
 
 /// returns 7 bits
-pub fn comp(mnemonic: &str) -> u8 {
-    match mnemonic {
-        "0" => 0b101010,
-        "1" => 0b111111,
-        "-1" => 0b111010,
-        "D" => 0b001100,
-        "A" => 0b110000,
-        "!D" => 0b001101,
-        "!A" => 0b110011,
-        "-D" => 0b001111,
-        "-A" => 0b110011,
-        "D+1" => 0b011111,
-        "A+1" => 0b110111,
-        "D-1" => 0b001110,
-        "A-1" => 0b110010,
-        "D+A" => 0b000010,
-        "D-A" => 0b010011,
-        "A-D" => 0b000111,
-        "D&A" => 0b000000,
-        "D|A" => 0b010101,
-        "M" => 0b1110000,
-        "!M" => 0b1110001,
-        "-M" => 0b1110011,
-        "M+1" => 0b1110111,
-        "M-1" => 0b1110010,
-        "D+M" => 0b1000010,
-        "D-M" => 0b1010011,
-        "M-D" => 0b1000111,
-        "D&M" => 0b1000000,
-        "D|M" => 0b1010101,
-        m => panic!("unrecognized comp mnemonic: {m}"),
+pub fn comp(comp: Comp) -> u8 {
+    use Comp::*;
+    use CompValue::*;
+
+    match comp {
+        Literal(Zero) => 0b010_1010,
+        Literal(One) => 0b011_1111,
+        Negative(One) => 0b011_1010,
+        Literal(RegD) => 0b000_1100,
+        Literal(RegA) => 0b011_0000,
+        Literal(RegM) => 0b111_0000,
+        Not(RegD) => 0b000_1101,
+        Not(RegA) => 0b011_0001,
+        Not(RegM) => 0b111_0001,
+        Negative(RegD) => 0b000_1111,
+        Negative(RegA) => 0b011_0011,
+        Negative(RegM) => 0b111_0011,
+        Add(RegD, One) => 0b001_1111,
+        Add(RegA, One) => 0b011_0111,
+        Add(RegM, One) => 0b111_0111,
+        Sub(RegD, One) => 0b000_1110,
+        Sub(RegA, One) => 0b011_0010,
+        Sub(RegM, One) => 0b111_0010,
+        Add(RegD, RegA) => 0b000_0010,
+        Add(RegD, RegM) => 0b100_0010,
+        Sub(RegD, RegA) => 0b001_0011,
+        Sub(RegD, RegM) => 0b101_0011,
+        Sub(RegA, RegD) => 0b000_0111,
+        Sub(RegM, RegD) => 0b100_0111,
+        And(RegD, RegA) => 0b000_0000,
+        And(RegD, RegM) => 0b100_0000,
+        Or(RegA, RegD) => 0b001_0101,
+        Or(RegD, RegM) => 0b101_0101,
+        _ => panic!("Invalid operation encountered: {comp:?}"),
     }
 }
 
-/// returns 3 bits
-pub fn jump(mnemonic: &str) -> u8 {
-    match mnemonic {
-        "null" => 0b000,
-        "JGT" => 0b001,
-        "JEQ" => 0b010,
-        "JGE" => 0b011,
-        "JLT" => 0b100,
-        "JNE" => 0b101,
-        "JLE" => 0b110,
-        "JMP" => 0b111,
-        j => panic!("unrecognized jump mnemonic: {j}"),
+pub fn jump(jump: Jump) -> u8 {
+    use Jump::*;
+
+    match jump {
+        NULL => 0,
+        JGT => 1,
+        JEQ => 2,
+        JGE => 3,
+        JLT => 4,
+        JNE => 5,
+        JLE => 6,
+        JMP => 7,
     }
 }

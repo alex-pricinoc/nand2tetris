@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -35,15 +33,13 @@ impl Default for SymbolTable {
             ("ARG", 2),
             ("THIS", 3),
             ("THAT", 4),
-            ("SCREEN", 16384),
-            ("KBD", 24576),
+            ("SCREEN", 0x4000),
+            ("KBD", 0x6000),
         ]
         .into_iter()
         .map(|(k, v)| (k.into(), v));
 
-        let iter = registers.chain(predefined_symbols);
-
-        let fields = HashMap::from_iter(iter);
+        let fields = registers.chain(predefined_symbols).collect();
 
         Self { fields }
     }
