@@ -3,9 +3,8 @@ use std::error::Error;
 use std::io::Write;
 
 pub fn run(input: &str, out: &mut impl Write) -> Result<(), Box<dyn Error>> {
-    for line in instructions(input) {
-        let instruction = line.parse()?;
-        let instructions = code::write(instruction);
+    for line in lines(input) {
+        let instructions = code::write(line.parse()?);
 
         for (i, ins) in instructions.into_iter().enumerate() {
             if i > 0 {
@@ -22,7 +21,7 @@ pub fn run(input: &str, out: &mut impl Write) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn instructions(input: &str) -> impl Iterator<Item = &str> {
+fn lines(input: &str) -> impl Iterator<Item = &str> {
     input
         .lines()
         .map(|l| {

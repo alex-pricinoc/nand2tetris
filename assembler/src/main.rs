@@ -1,8 +1,7 @@
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
-use std::{env, fs};
-use std::{io, process};
+use std::{env, fs, io, process};
 
 fn main() -> io::Result<()> {
     let files = env::args().skip(1).collect::<Vec<_>>();
