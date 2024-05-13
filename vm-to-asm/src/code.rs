@@ -89,10 +89,16 @@ fn write_push(seg: Segment, i: u16) -> Vec<assembly::Instruction> {
                 Command(M, Add(RegM, One), NOJ),
             ]
         }
-        Temp => {
+        Temp | Static => {
+            let address = match seg {
+                Temp => 5,
+                Static => 16,
+                _ => unreachable!(),
+            };
+
             vec![
-                // addr <- 5 + i
-                Address(Number(5)),
+                // addr <- startingBlock + i
+                Address(Number(address)),
                 Command(D, Literal(RegA), NOJ),
                 Address(Number(i)),
                 Command(D, Add(RegA, RegD), NOJ),
@@ -107,7 +113,6 @@ fn write_push(seg: Segment, i: u16) -> Vec<assembly::Instruction> {
                 Command(M, Add(RegM, One), NOJ),
             ]
         }
-        Static => todo!(),
     }
 }
 
@@ -142,10 +147,16 @@ fn write_pop(seg: Segment, i: u16) -> Vec<assembly::Instruction> {
                 Command(M, Literal(RegD), NOJ),
             ]
         }
-        Temp => {
+        Temp | Static => {
+            let address = match seg {
+                Temp => 5,
+                Static => 16,
+                _ => unreachable!(),
+            };
+
             vec![
                 // addr <- 5 + i
-                Address(Number(5)),
+                Address(Number(address)),
                 Command(D, Literal(RegA), NOJ),
                 Address(Number(i)),
                 Command(D, Add(RegA, RegD), NOJ),
@@ -161,7 +172,6 @@ fn write_pop(seg: Segment, i: u16) -> Vec<assembly::Instruction> {
                 Command(M, Literal(RegD), NOJ),
             ]
         }
-        Static => todo!(),
         Pointer => {
             let ptr = match i {
                 0 => "THIS",
