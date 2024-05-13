@@ -11,6 +11,11 @@ fn get_id(inc: usize) -> usize {
     COUNTER.fetch_add(inc, Ordering::Relaxed)
 }
 
+pub const INFINITE_LOOP: &str = "\
+(END)
+@END
+0;JMP";
+
 pub fn write(command: crate::Instruction) -> Vec<assembly::Instruction> {
     use crate::Instruction::*;
 
@@ -28,11 +33,32 @@ fn write_push(seg: Segment, i: u16) -> Vec<assembly::Instruction> {
     match seg {
         Constant => {
             vec![
+                // D=i
                 Address(Number(i)),
                 Command(D, Literal(RegA), NOJ),
+                // RAM[SP]=D
                 Address(Symbol("SP".into())),
                 Command(A, Literal(RegM), NOJ),
                 Command(M, Literal(RegD), NOJ),
+                // SP++
+                Address(Symbol("SP".into())),
+                Command(M, Add(RegM, One), NOJ),
+            ]
+        }
+        Pointer => {
+            let ptr = match i {
+                0 => "THIS",
+                1 => "THAT",
+                _ => unreachable!(),
+            };
+
+            vec![
+                Address(Symbol(ptr.into())),
+                Command(D, Literal(RegM), NOJ),
+                Address(Symbol("SP".into())),
+                Command(A, Literal(RegM), NOJ),
+                Command(M, Literal(RegD), NOJ),
+                // SP++
                 Address(Symbol("SP".into())),
                 Command(M, Add(RegM, One), NOJ),
             ]
@@ -63,7 +89,6 @@ fn write_push(seg: Segment, i: u16) -> Vec<assembly::Instruction> {
                 Command(M, Add(RegM, One), NOJ),
             ]
         }
-
         Temp => {
             vec![
                 // addr <- 5 + i
@@ -82,7 +107,6 @@ fn write_push(seg: Segment, i: u16) -> Vec<assembly::Instruction> {
                 Command(M, Add(RegM, One), NOJ),
             ]
         }
-        Pointer => todo!(),
         Static => todo!(),
     }
 }
@@ -138,7 +162,21 @@ fn write_pop(seg: Segment, i: u16) -> Vec<assembly::Instruction> {
             ]
         }
         Static => todo!(),
-        Pointer => unimplemented!(),
+        Pointer => {
+            let ptr = match i {
+                0 => "THIS",
+                1 => "THAT",
+                _ => unreachable!(),
+            };
+
+            vec![
+                Address(Symbol("SP".into())),
+                Command(AM, Sub(RegM, One), NOJ),
+                Command(D, Literal(RegM), NOJ),
+                Address(Symbol(ptr.into())),
+                Command(M, Literal(RegD), NOJ),
+            ]
+        }
         Constant => unreachable!(),
     }
 }

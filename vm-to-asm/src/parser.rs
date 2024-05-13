@@ -17,7 +17,7 @@ pub fn run(input: &str, out: &mut impl Write) -> Result<(), Box<dyn Error>> {
         writeln!(out, " // {}", line)?;
     }
 
-    writeln!(out, "{}", INFINITE_LOOP)?;
+    writeln!(out, "{}", code::INFINITE_LOOP)?;
 
     Ok(())
 }
@@ -32,8 +32,3 @@ fn instructions(input: &str) -> impl Iterator<Item = &str> {
         })
         .filter(|&l| !l.is_empty())
 }
-
-const INFINITE_LOOP: &str = "\
-(END)
-@END
-0;JMP";
