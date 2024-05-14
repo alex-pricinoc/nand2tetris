@@ -1,4 +1,4 @@
-COMPLETED :=  1 2 3 4 7
+COMPLETED := 1 2 3 4 7
 HDL       := $(shell git ls-files -co $(patsubst %,projects/%/*.hdl, $(COMPLETED)))
 ASM       := $(shell git ls-files -co $(patsubst %,projects/%/*.asm, $(COMPLETED)))
 VM        := $(shell git ls-files -co $(patsubst %,projects/%/*.vm, $(COMPLETED)))
