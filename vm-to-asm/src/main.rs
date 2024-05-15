@@ -1,13 +1,9 @@
-#![allow(unused_imports)]
-
-use std::fs::File;
-use std::io::BufWriter;
 use std::path::Path;
 use std::{env, fs, io, process};
 use vm_to_asm::{code_writer::CodeWriter, parser::Parser, CommandType};
 
 fn main() -> io::Result<()> {
-    let args = std::env::args().skip(1).collect::<Vec<_>>();
+    let args = env::args().skip(1).collect::<Vec<_>>();
 
     if args.is_empty() {
         println!("help: vm-to-asm <input vm file>");
@@ -30,7 +26,6 @@ fn main() -> io::Result<()> {
         let command_type = parser.command_type();
 
         use CommandType::*;
-
         match command_type {
             Arithmetic => {
                 let command = parser.arg1();
@@ -53,9 +48,17 @@ fn main() -> io::Result<()> {
                 let label = parser.arg1();
                 code_writer.write_goto(label)?;
             }
-            Function => unimplemented!(),
-            Return => unimplemented!(),
-            Call => unimplemented!(),
+            Function => {
+                let function_name = parser.arg1();
+                let n_vars = parser.arg2();
+                code_writer.write_function(function_name, n_vars)?;
+            }
+            Call => {
+                let function_name = parser.arg1();
+                let n_args = parser.arg2();
+                code_writer.write_call(function_name, n_args)?;
+            }
+            Return => code_writer.write_return()?,
         }
 
         parser.advance();

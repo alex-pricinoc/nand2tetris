@@ -30,7 +30,7 @@ impl CodeWriter {
     }
 
     pub fn write_arithmetic(&mut self, command: &str) -> Result<()> {
-        let output_file = self.output_file.as_mut().expect("output_file is set");
+        let out = self.output_file.as_mut().expect("output_file is set");
 
         match command {
             "add" | "sub" | "and" | "or" => {
@@ -43,7 +43,7 @@ impl CodeWriter {
                 };
 
                 writeln!(
-                    output_file,
+                    out,
                     "\
 @SP
 AM=M-1
@@ -61,7 +61,7 @@ M=M{op}D // {command}"
                 };
 
                 writeln!(
-                    output_file,
+                    out,
                     "\
 @SP
 A=M-1
@@ -82,7 +82,7 @@ M={op}M // {command}"
                 self.jump_counter += 1;
 
                 writeln!(
-                    output_file,
+                    out,
                     "\
 @SP
 AM=M-1
@@ -108,7 +108,7 @@ M=D // {command}"
     }
 
     pub fn write_pushpop(&mut self, command: CommandType, segment: &str, index: u16) -> Result<()> {
-        let output_file = self.output_file.as_mut().expect("file is set");
+        let out = self.output_file.as_mut().expect("file is set");
         let filename = self.module.as_ref().expect("module is set");
 
         let basename = filename
@@ -122,25 +122,25 @@ M=D // {command}"
             Push => match segment {
                 "constant" => {
                     writeln!(
-                        output_file,
+                        out,
                         "\
 @{index}
 D=A
-{PUSH_REGD} // {command} {segment} {index}"
+{PUSH_REGD} // push {segment} {index}"
                     )
                 }
                 "argument" | "local" | "this" | "that" => {
                     let symbol = get_segment_symbol(segment);
 
                     writeln!(
-                        output_file,
+                        out,
                         "\
 @{symbol}
 D=M
 @{index}
 A=A+D
 D=M
-{PUSH_REGD}"
+{PUSH_REGD} // push {segment} {index}"
                     )
                 }
                 "pointer" | "temp" => {
@@ -152,7 +152,7 @@ D=M
                     };
 
                     writeln!(
-                        output_file,
+                        out,
                         "\
 @{symbol}
 D=M
@@ -162,7 +162,7 @@ D=M
                 }
                 "static" => {
                     writeln!(
-                        output_file,
+                        out,
                         "\
 @{static_symbol}
 D=M
@@ -178,7 +178,7 @@ D=M
                     let symbol = get_segment_symbol(segment);
 
                     writeln!(
-                        output_file,
+                        out,
                         "\
 @{symbol}
 D=M
@@ -204,7 +204,7 @@ M=D"
                     };
 
                     writeln!(
-                        output_file,
+                        out,
                         "\
 @SP
 AM=M-1
@@ -216,7 +216,7 @@ M=D"
 
                 "static" => {
                     writeln!(
-                        output_file,
+                        out,
                         "\
 @SP
 AM=M-1
@@ -234,20 +234,20 @@ M=D",
     }
 
     pub fn write_label(&mut self, label: &str) -> Result<()> {
-        let output_file = self.output_file.as_mut().expect("file is set");
+        let out = self.output_file.as_mut().expect("file is set");
 
         writeln!(
-            output_file,
+            out,
             "\
 ({label})"
         )
     }
 
     pub fn write_if(&mut self, label: &str) -> Result<()> {
-        let output_file = self.output_file.as_mut().expect("file is set");
+        let out = self.output_file.as_mut().expect("file is set");
 
         writeln!(
-            output_file,
+            out,
             "\
 @SP
 AM=M-1
@@ -258,13 +258,97 @@ D;JGT"
     }
 
     pub fn write_goto(&mut self, label: &str) -> Result<()> {
-        let output_file = self.output_file.as_mut().expect("file is set");
+        let out = self.output_file.as_mut().expect("file is set");
+
+        writeln!(out, "@{label}\n0;JMP")
+    }
+
+    pub fn write_function(&mut self, name: &str, n_vars: u16) -> Result<()> {
+        let out = self.output_file.as_mut().expect("file is set");
+
+        writeln!(out, "({name})")?;
+
+        for i in 0..n_vars {
+            writeln!(
+                out,
+                "\
+@LCL
+D=M
+@{i}
+A=A+D
+D=M
+@SP
+M=M+1 // push {i}"
+            )?;
+        }
+
+        Ok(())
+    }
+
+    pub fn write_call(&mut self, name: &str, n_args: u16) -> Result<()> {
+        unimplemented!()
+    }
+
+    pub fn write_return(&mut self) -> Result<()> {
+        let out = self.output_file.as_mut().expect("file is set");
 
         writeln!(
-            output_file,
+            out,
             "\
-@{label}
-0;JMP"
+@LCL
+D=M
+@R5
+M=D // endFrame = LCL
+@5
+D=D-A
+A=D
+D=M
+@R6
+M=D // retAddr = *(endFrame - 5)
+@SP
+AM=M-1
+D=M
+@ARG
+A=M
+M=D // *ARG = pop()
+D=A+1
+@SP
+M=D // SP = ARG + 1
+@R5
+D=M
+@1
+D=D-A
+A=D
+D=M
+@THAT
+M=D // THAT = *(endFrame - 1)
+@R5
+D=M
+@2
+D=D-A
+A=D
+D=M
+@THIS
+M=D // THIS = *(endFrame - 2)
+@R5
+D=M
+@3
+D=D-A
+A=D
+D=M
+@ARG
+M=D // ARG = *(endFrame - 3)
+@R5
+D=M
+@4
+D=D-A
+A=D
+D=M
+@LCL
+M=D // LCL = *(endFrame - 4)
+@R6
+A=M
+0;JMP // goto retAddr"
         )
     }
 }
@@ -275,7 +359,7 @@ fn get_segment_symbol(segment: &str) -> &'static str {
         "local" => "LCL",
         "this" => "THIS",
         "that" => "THAT",
-        _ => panic!("Invalid segment name {} encountered.", segment),
+        _ => panic!("invalid segment name: {}", segment),
     }
 }
 
