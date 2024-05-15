@@ -60,7 +60,7 @@ impl Parser {
             "pop" | "push" | "label" | "goto" | "if-goto" | "function" | "call" => {
                 words.next().unwrap()
             }
-            c => panic!("invalid command {} at line {}", c, self.line + 1),
+            _ => panic!("invalid arg1() call at line: {}", line),
         }
     }
 
@@ -73,7 +73,7 @@ impl Parser {
                 words.next().unwrap();
                 words.next().unwrap().parse().unwrap()
             }
-            s => panic!("invalid instruction {s}"),
+            _ => panic!("invalid arg2() call at line: {}", line),
         }
     }
 }

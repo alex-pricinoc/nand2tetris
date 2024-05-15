@@ -114,7 +114,8 @@ M=D // {command}"
         let basename = filename
             .strip_suffix(".vm")
             .expect("file is a list of vm instructions");
-        // let static_symbol = || format_args!("{basename}.{index}");
+
+        let static_symbol = format!("{basename}.{index}");
 
         use CommandType::*;
         match command {
@@ -125,7 +126,7 @@ M=D // {command}"
                         "\
 @{index}
 D=A
-{PUSH_REG_D} // {command} {segment} {index}"
+{PUSH_REGD} // {command} {segment} {index}"
                     )
                 }
                 "argument" | "local" | "this" | "that" => {
@@ -139,7 +140,7 @@ D=M
 @{index}
 A=A+D
 D=M
-{PUSH_REG_D}"
+{PUSH_REGD}"
                     )
                 }
                 "pointer" | "temp" => {
@@ -155,7 +156,7 @@ D=M
                         "\
 @{symbol}
 D=M
-{PUSH_REG_D}
+{PUSH_REGD}
 "
                     )
                 }
@@ -163,9 +164,9 @@ D=M
                     writeln!(
                         output_file,
                         "\
-@{basename}.{index}
+@{static_symbol}
 D=M
-{PUSH_REG_D}
+{PUSH_REGD}
 "
                     )
                 }
@@ -220,7 +221,7 @@ M=D"
 @SP
 AM=M-1
 D=M
-@{basename}.{index}
+@{static_symbol}
 M=D",
                     )
                 }
@@ -230,6 +231,41 @@ M=D",
 
             _ => panic!("invalid command: {command:?}"),
         }
+    }
+
+    pub fn write_label(&mut self, label: &str) -> Result<()> {
+        let output_file = self.output_file.as_mut().expect("file is set");
+
+        writeln!(
+            output_file,
+            "\
+({label})"
+        )
+    }
+
+    pub fn write_if(&mut self, label: &str) -> Result<()> {
+        let output_file = self.output_file.as_mut().expect("file is set");
+
+        writeln!(
+            output_file,
+            "\
+@SP
+AM=M-1
+D=M
+@{label}
+D;JGT"
+        )
+    }
+
+    pub fn write_goto(&mut self, label: &str) -> Result<()> {
+        let output_file = self.output_file.as_mut().expect("file is set");
+
+        writeln!(
+            output_file,
+            "\
+@{label}
+0;JMP"
+        )
     }
 }
 
@@ -243,7 +279,7 @@ fn get_segment_symbol(segment: &str) -> &'static str {
     }
 }
 
-const PUSH_REG_D: &str = "\
+const PUSH_REGD: &str = "\
 @SP
 A=M
 M=D

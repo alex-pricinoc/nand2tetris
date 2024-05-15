@@ -41,9 +41,18 @@ fn main() -> io::Result<()> {
                 let index = parser.arg2();
                 code_writer.write_pushpop(command_type, segment, index)?;
             }
-            Label => unimplemented!(),
-            Goto => unimplemented!(),
-            If => unimplemented!(),
+            Label => {
+                let label = parser.arg1();
+                code_writer.write_label(label)?;
+            }
+            If => {
+                let label = parser.arg1();
+                code_writer.write_if(label)?;
+            }
+            Goto => {
+                let label = parser.arg1();
+                code_writer.write_goto(label)?;
+            }
             Function => unimplemented!(),
             Return => unimplemented!(),
             Call => unimplemented!(),
