@@ -16,7 +16,7 @@ fn main() -> io::Result<()> {
 
     let mut code_writer = CodeWriter::new();
     code_writer.set_file_name(dest);
-    // code_writer.write_init();
+    code_writer.write_init()?;
 
     for file in vm_files {
         let input = fs::read_to_string(&file)?;

@@ -31,8 +31,24 @@ impl CodeWriter {
         self.output_file = None;
     }
 
+    pub fn write_init(&mut self) -> Result<()> {
+        let out = self.output_file.as_mut().expect("output_file is set");
+
+        writeln!(
+            out,
+            "    @256
+    D=A
+    @SP
+    M=D"
+        )?;
+
+        self.write_call("Sys.init", 0)
+    }
+
     pub fn write_arithmetic(&mut self, command: &str) -> Result<()> {
         let out = self.output_file.as_mut().expect("output_file is set");
+
+        let module = self.module.as_ref().expect("module is set");
 
         match command {
             "add" | "sub" | "and" | "or" => {
@@ -77,7 +93,6 @@ impl CodeWriter {
                     _ => unreachable!(),
                 };
 
-                let branch = command;
                 let id = self.jump_counter;
                 self.jump_counter += 1;
 
@@ -88,14 +103,14 @@ impl CodeWriter {
     D=M
     A=A-1
     D=M-D
-    @__{branch}_{id}_true
+    @{module}$if_true{id}
     D;{jump}
     D=0
-    @__{branch}_{id}_end
+    @{module}$if_end{id}
     0;JMP
-    (__{branch}_{id}_true)
+({module}$if_true{id})
     D=-1
-    (__{branch}_{id}_end)
+({module}$if_end{id})
     @SP
     A=M-1
     M=D // {command}"
@@ -224,12 +239,14 @@ impl CodeWriter {
     }
 
     pub fn write_label(&mut self, label: &str) -> Result<()> {
+        let label = self.local_label(label);
         let out = self.output_file.as_mut().expect("file is set");
 
         writeln!(out, "({label})")
     }
 
     pub fn write_if(&mut self, label: &str) -> Result<()> {
+        let label = self.local_label(label);
         let out = self.output_file.as_mut().expect("file is set");
 
         writeln!(
@@ -238,11 +255,12 @@ impl CodeWriter {
     AM=M-1
     D=M
     @{label}
-    D;JGT"
+    D;JNE"
         )
     }
 
     pub fn write_goto(&mut self, label: &str) -> Result<()> {
+        let label = self.local_label(label);
         let out = self.output_file.as_mut().expect("file is set");
 
         writeln!(out, "    @{label}\n    0;JMP")
@@ -269,11 +287,11 @@ impl CodeWriter {
 
         self.return_counter += 1;
 
-        let ret_addr_label = format!("{name}$ret.{counter}", counter = self.return_counter);
+        let return_address_label = format!("{name}$ret.{counter}", counter = self.return_counter);
 
         writeln!(
             out,
-            "    @{ret_addr_label} // call {name} {n_args}
+            "    @{return_address_label}
     D=A
     {PUSH_REGD}       // push retAddrLabel
     @LCL
@@ -306,7 +324,7 @@ impl CodeWriter {
     M=D               // LCL = SP
     @{name}
     0;JMP
-({ret_addr_label})"
+({return_address_label})"
         )
     }
 
@@ -372,6 +390,12 @@ impl CodeWriter {
     A=M
     0;JMP // goto retAddr"
         )
+    }
+
+    fn local_label(&self, label: &str) -> String {
+        let module = self.module.as_ref().expect("module is set");
+
+        format!("{module}${label}")
     }
 }
 
