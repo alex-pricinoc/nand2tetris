@@ -1,4 +1,5 @@
-use compiler::Parser;
+// use compiler::Analyzer;
+use compiler::CompilationEngine;
 use fs::File;
 use io::{BufWriter, Result};
 use path::Path;
@@ -25,9 +26,12 @@ fn main() -> Result<()> {
 
         let mut output = BufWriter::new(File::create(output)?);
 
-        let mut parser = Parser::new(input, &mut output);
+        // let analyzer = Analyzer::new(input);
 
-        parser.to_xml_0()?;
+        // analyzer.generate_xml(output)?;
+
+        let mut compilation_engine = CompilationEngine::new(&input, &mut output);
+        compilation_engine.compile()?;
     }
 
     Ok(())

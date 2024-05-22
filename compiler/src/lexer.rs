@@ -19,11 +19,13 @@ impl Token {
     }
 }
 
-#[derive(Debug, PartialEq)]
+// TODO: remove these derive traits
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum TokenKind {
     LineComment,
     BlockComment,
     Whitespace,
+
     /// "ident" or "continue"
     ///
     /// At this step, keywords are also considered identifiers.
@@ -77,7 +79,7 @@ pub enum TokenKind {
     Eof,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum LiteralKind {
     Int,
     Str,
@@ -102,11 +104,11 @@ fn is_whitespace(c: char) -> bool {
 
 #[allow(clippy::manual_is_ascii_check)]
 fn is_id_start(c: char) -> bool {
-    c == '_' || matches!(c, 'A'..='Z' | 'a'..='z')
+    matches!(c, 'A'..='Z' | 'a'..='z' | '_')
 }
 
 fn is_id_continue(c: char) -> bool {
-    matches!(c, 'A'..='Z' | 'a'..='z' | '_' | '0'..='9')
+    matches!(c, 'A'..='Z' | 'a'..='z' | '0'..='9' | '_')
 }
 
 impl Cursor<'_> {
