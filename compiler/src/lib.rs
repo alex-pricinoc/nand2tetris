@@ -1,9 +1,11 @@
-pub use analyzer::Analyzer;
-pub use compilation_engine::CompilationEngine;
-pub use lexer::tokenize;
-pub use parser::{parse, KeywordKind::*, SymbolKind::*, Token, Token::*};
+pub mod compilation;
+pub mod compiler;
+pub mod parse;
+pub mod tokenize;
 
-mod analyzer;
-mod compilation_engine;
-mod lexer;
-mod parser;
+#[macro_export]
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        eprintln!("compiler [{}:{}] {}", file!(), line!(), format_args!( $( $t )* ))
+    }
+}

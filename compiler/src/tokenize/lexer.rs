@@ -19,8 +19,7 @@ impl Token {
     }
 }
 
-// TODO: remove these derive traits
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq)]
 pub enum TokenKind {
     LineComment,
     BlockComment,
@@ -134,10 +133,7 @@ impl Cursor<'_> {
             c if is_id_start(c) => self.ident(),
 
             // Numeric literal.
-            '0'..='9' => {
-                let literal_kind = self.eat_digits();
-                TokenKind::Literal(literal_kind)
-            }
+            '0'..='9' => Literal(self.eat_digits()),
 
             // One-symbol tokens.
             ';' => Semi,
