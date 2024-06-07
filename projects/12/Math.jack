@@ -10,11 +10,25 @@
  *  using calls to OS functions in this class.
  */
 class Math {
-    static int n;             // Number of bits used for representing a two's complement integer
-    static Array powersOfTwo; // Stores 2^0, 2^1, 2^2,..., 2^(n-1)
+    static int n;      // Number of bits used for representing a two's complement integer
+    static Array pow2; // Stores 2^0, 2^1, 2^2,..., 2^(n-1)
 
     // Initializes the Math library.
     function void init() {
+        var int i, j;
+
+        let n = 16;
+        let pow2 = Array.new(n);
+
+        let j = 1;
+        let i = 0;
+        while (i < n) {
+            let pow2[i] = j;
+            let j = j + j;
+            let i = i + 1;
+        }
+
+        return;
     }
 
     /** Returns the product of x and y. 
@@ -22,6 +36,22 @@ class Math {
      *  in an expression, it handles it by invoking this method. 
      *  Thus, in Jack, x * y and Math.multiply(x,y) return the same value. */
     function int multiply(int x, int y) {
+        var int sum, shiftedX, i, bit;
+        let sum = 0;
+        let shiftedX = x;
+
+        let bit = 1;
+        let i = 0;
+        while (i < n) {
+            if ((y & bit) = bit) {
+                let sum = sum + shiftedX;
+            }
+            let shiftedX = shiftedX + shiftedX;
+            let bit = bit + bit;
+            let i = i + 1;
+        }
+
+        return sum;
     }
 
     /** Returns the integer part of x / y.
@@ -29,21 +59,81 @@ class Math {
      *  an an expression, it handles it by invoking this method.
      *  Thus, x/y and Math.divide(x,y) return the same value. */
     function int divide(int x, int y) {
+        var int q;
+
+        if (y = 0) {
+            do Sys.error(3);
+            return 0;
+        }
+
+        let q = Math._div(Math.abs(x), Math.abs(y));
+
+        if ((x < 0) = (y < 0)) {    // sign(x) == sign(y)
+            return q;
+        } else {
+            return -q;
+        }
+    }
+    function int _div(int x, int y) {
+        var int q;
+
+        if (y > x) {
+            return 0;
+        }
+
+        let q = Math._div(x, 2 * y);
+
+        if (x - (2 * q * y) < y) {
+            return 2 * q;
+        } else {
+            return 2 * q + 1;
+        }
     }
 
     /** Returns the integer part of the square root of x. */
     function int sqrt(int x) {
+        var int y, j, a, b;
+
+        let y = 0;
+        let j = n / 2 - 1;
+
+        while (j > -1) {
+            let a = y + pow2[j];
+            let b = a * a;
+
+            if (b - 1 < x & b > 0) {
+                let y = a;
+            }
+
+            let j = j - 1;
+        }
+
+        return y;
+
     }
 
     /** Returns the greater value. */
     function int max(int a, int b) {
+        if (a > b) {
+            return a;
+        }
+
+        return b;
     }
 
     /** Returns the smaller value. */
     function int min(int a, int b) {
+        if (a < b) {
+            return a;
+        }
+        return b;
     }
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
+        if (x < 0) {
+            return -x;
+        }
+        return x;
     }
 }
