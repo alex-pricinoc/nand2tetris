@@ -9,25 +9,96 @@
  */ 
 class Memory {
 
+    static Array RAM, freeList;
+
     /** Initializes the class. */
     function void init() {
+        var int len;
+
+        let RAM = 0;
+        let len = 16384 - 2048;
+        let freeList = 2048;
+
+        let freeList[0] = null;
+        let freeList[1] = len - 2;
+
+        return;
     }
 
     /** Returns the RAM value at the given address. */
     function int peek(int address) {
+        return RAM[address];
     }
 
     /** Sets the RAM value at the given address to the given value. */
     function void poke(int address, int value) {
+        let RAM[address] = value;
+
+        return;
     }
 
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
+        var Array block;
+        var int allocSize;
+
+        let allocSize = size + 2;
+        let block = freeList;
+
+        while (block[1] < allocSize) {
+            let block = block[0];
+
+            if (block = null) {
+                do Sys.error(5);
+                return 0;
+            }
+        }
+
+        // remove block from list
+        let block[1] = block[1] - allocSize;
+        let block = block + block[1] + 2;
+        let block[0] = null;
+        let block[1] = size;
+
+        return block + 2;
     }
 
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
-    function void deAlloc(Array o) {
+    function void deAlloc(Array object) {
+        var Array segment, prev, next, temp;
+
+        let segment = object - 2;
+        let prev = freeList;
+        let next = freeList[0];
+
+        while (~(next = null) & (next < segment)) {
+            let prev = next;
+            let next = prev[0];
+        }
+
+        if (next = null) {
+            let segment[0] = null;
+            let prev[0] = segment;
+        } else {
+            let temp = prev[0];
+            let prev[0] = segment;
+            let segment[0] = temp;
+        }
+
+        // Combine segment with next_seg if contiguous.
+        if ((segment + segment[1] + 2) = next) {
+            let segment[1] = segment[1] + next[1] + 2;
+            let segment[0] = next[0];
+        }
+
+        // Combine segment with prev_seg if contiguous.
+        if ((prev + prev[1] + 2) = segment) {
+              let prev[1] = prev[1] + segment[1] + 2;
+              let prev[0] = segment[0];
+        }
+
+        return;
     }    
 }
