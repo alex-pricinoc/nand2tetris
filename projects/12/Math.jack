@@ -98,7 +98,7 @@ class Math {
         let j = n / 2 - 1;
 
         while (j > -1) {
-            let a = y + pow2[j];
+            let a = y + Math.twoToThe(j);
             let b = a * a;
 
             if (b - 1 < x & b > 0) {
@@ -135,5 +135,9 @@ class Math {
             return -x;
         }
         return x;
+    }
+
+    function int twoToThe(int x) {
+        return pow2[x];
     }
 }

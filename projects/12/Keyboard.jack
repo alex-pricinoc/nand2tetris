@@ -49,7 +49,6 @@ class Keyboard {
         while (Keyboard.keyPressed() = 0) {}
         let key = Keyboard.keyPressed();
         while (~(Keyboard.keyPressed() = 0)) {}
-
         do Output.printChar(key);
 
         return key;
@@ -86,6 +85,7 @@ class Keyboard {
     function int readInt(String message) {
         var String line;
         let line = Keyboard.readLine(message);
+
         return line.intValue();
     }
 }
