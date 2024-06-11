@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use crate::parse::ast;
-use ast::Type;
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum Kind {
@@ -14,7 +13,7 @@ pub enum Kind {
 #[derive(Debug)]
 pub struct Symbol {
     pub name: String,
-    pub r#type: Type,
+    pub r#type: ast::Type,
     pub kind: Kind,
     pub index: usize,
 }
@@ -34,7 +33,7 @@ impl SymbolTable {
         self.var_counts.remove(&Kind::Local);
     }
 
-    pub fn define(&mut self, r#type: &Type, kind: Kind, name: &str) {
+    pub fn define(&mut self, r#type: &ast::Type, kind: Kind, name: &str) {
         let index = self.next_index(kind);
 
         use Kind::*;

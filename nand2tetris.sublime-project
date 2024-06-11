@@ -4,4 +4,21 @@
       "path": ".",
     }
   ],
+  "build_systems": [
+    {
+      "name": "jackc file",
+      "cmd": ["jackc", "$file"],
+      "file_patterns": ["*.jack"]
+    },
+    {
+      "name": "vm-to-asm file",
+      "cmd": ["vm-to-asm", "$file", "$file_base_name.asm"],
+      "file_patterns": ["*.vm"]
+    },
+    {
+      "name": "JackCompiler.sh file",
+      "cmd": ["$project_path/tools/JackCompiler.sh", "$file"],
+      "file_patterns": ["*.jack"]
+    }
+  ]
 }
